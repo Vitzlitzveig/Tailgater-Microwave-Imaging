@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.special import jv	# Bessel functions of 1sr kind
 from scipy.signal import convolve2d
 
+
 def load_data(fname):
 	data =  np.loadtxt(fname)
 
@@ -29,6 +30,15 @@ def load_data(fname):
 	# data -= data.min()
 	# data/=data.max()
 	return data
+
+
+def progressbar(i, total):
+	I = i+1
+	bars = 30
+	pos = int(I*bars / total)
+	s = '[' + '#'*pos + ' '*(bars-pos)+f'] {I}/{total}'
+	print('\r' + s, end='')
+	if I == total: print()
 
 
 def beam_form(Ti, Tj=0, f=11e9, D=0.40):
@@ -108,6 +118,7 @@ def RL_deconv(data, kernel, iters=100, eps=1e-8, u0=None):
 		u = u0.copy()
 
 	for I in range(iters):
+		progressbar(I, iters)
 		k = conv(data1/(conv(u)))
 		u *= k
 		n = np.linalg.norm(k-1, np.inf)
@@ -127,7 +138,7 @@ def sharpen_image(fname):
 	beam /= beam.sum()
 
 
-	reconstruction = RL_deconv(data, beam, iters=100)
+	reconstruction = RL_deconv(data, beam, iters=1000)
 	np.savetxt(fname[:-4]+'-reconstructed.txt', reconstruction)
 
 	plt.subplot(211)
