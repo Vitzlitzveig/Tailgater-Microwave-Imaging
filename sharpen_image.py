@@ -64,6 +64,11 @@ def beam_form(Ti, Tj=0, f=11e9, D=0.40):
 
 
 def beam_mask(shape, deg_in_pix=1.):
+	'''
+	Retruns 2d array representing a beam form
+	shape - shape of the array to return
+	deg_in_pix - width of one pixel in degrees
+	'''
 	beam = np.zeros(shape)
 	i0, j0 = map(lambda x: x//2, shape)
 	for i in range(shape[0]):
@@ -75,7 +80,7 @@ def beam_mask(shape, deg_in_pix=1.):
 
 def check_beam(fname, i0, j0, N=21):
 	'''
-	Check if theoretical beam mathces with the image
+	Visual check if theoretical beam matches with the image
 	i0, j0 - coordinates of a beam center, pixels
 	N - size of sample, pixels
 	'''
@@ -100,6 +105,11 @@ def check_beam(fname, i0, j0, N=21):
 def RL_deconv(data, kernel, iters=100, eps=1e-8, u0=None):
 	'''
 	Richardson-Lucy deconvolution
+
+	data - data for deconvolution itself
+	iters - maximum number of iterations for sharpening
+	eps - process strops when amendment on the current step is lower then eps
+	u0 - initial guess for deconvolved image. By default it euqals to data
 	'''
 
 	# A bit better convolution
@@ -113,9 +123,9 @@ def RL_deconv(data, kernel, iters=100, eps=1e-8, u0=None):
 	data1 += 1
 
 	if u0 is None:
-		u = data1.copy()
+		u = np.array(data)
 	else:
-		u = u0.copy()
+		u = np.array(u0)
 
 	for I in range(iters):
 		progressbar(I, iters)
@@ -136,7 +146,6 @@ def sharpen_image(fname):
 	data = load_data(fname)
 	beam = beam_mask((71, 71))
 	beam /= beam.sum()
-
 
 	reconstruction = RL_deconv(data, beam, iters=1000)
 	np.savetxt(fname[:-4]+'-reconstructed.txt', reconstruction)
